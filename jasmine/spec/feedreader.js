@@ -146,32 +146,35 @@ $(
       let valBeforeChange;
       let valAfterChange;
 
-      beforeEach(function(done) {
+      beforeEach(done => {
         try {
-          loadFeed(0, done);
+          loadFeed(0, () => {
+            const feedContainer = document.getElementsByClassName('feed')[0];
+            const firstEntryHeaderBeforeChange = getNestedFirstElementChild(
+              3,
+              feedContainer
+            );
+
+            valBeforeChange = firstEntryHeaderBeforeChange.innerText;
+
+            loadFeed(1, () => {
+              const firstEntryHeaderAfterChange = getNestedFirstElementChild(
+                3,
+                feedContainer
+              );
+
+              valAfterChange = firstEntryHeaderAfterChange.innerText;
+              done();
+            });
+          });
         } catch (e) {
           throw new Error('beforeEach error on loadFeed call', e);
         }
       });
 
-      it('content changes when new feed loads', function(done) {
-        const feedContainer = document.getElementsByClassName('feed')[0];
-        const firstEntryHeader = getNestedFirstElementChild(3, feedContainer);
-
-        valBeforeChange = firstEntryHeader.innerText;
-
-        // load different feed
-        const test = new Promise((resolve, reject) => {
-          loadFeed(1, resolve);
-        });
-        test.then(val => {
-          const firstEntryHeader = getNestedFirstElementChild(3, feedContainer);
-
-          valAfterChange = firstEntryHeader.innerText;
-          expect(valAfterChange).not.toBe(valBeforeChange);
-          done();
-        });
-      });
-    });
+      it('content changes when new feed loads', function() {
+        expect(valAfterChange).not.toBe(valBeforeChange);
+      }); // .it()
+    }); // .describe();
   })()
 );
